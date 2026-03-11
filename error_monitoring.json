@@ -1,0 +1,201 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        64
+      ],
+      "id": "f41628a8-8c45-47c8-bfd0-2e717f00a653",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "58392015-156a-433f-8c14-26b15049fc89",
+              "name": "timestamp",
+              "value": "={{ new Date().toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'}) }}",
+              "type": "string"
+            },
+            {
+              "id": "370d4baa-086d-4b19-8e82-17907b4be56c",
+              "name": "workflow",
+              "value": "={{ $json.workflow?.name ?? 'unknown_workflow' }}",
+              "type": "string"
+            },
+            {
+              "id": "8a27aa14-1633-4db3-b536-82ace85df190",
+              "name": "node",
+              "value": "={{ $json.execution?.lastNodeExecuted ?? 'unknown_node' }}",
+              "type": "string"
+            },
+            {
+              "id": "9e74bc51-145b-4fb7-8d3e-f6213f92980a",
+              "name": "error_message",
+              "value": "={{ $json.execution?.error?.message ?? 'no message' }}",
+              "type": "string"
+            },
+            {
+              "id": "a832bd28-a900-482e-b449-a0195652285f",
+              "name": "stacktrace",
+              "value": "={{ ($json.execution?.error?.stack ?? 'no stack').substring(0, 200) }}",
+              "type": "string"
+            },
+            {
+              "id": "90c57ce5-32e0-417d-a39a-173f019ced4b",
+              "name": "input",
+              "value": "={{ JSON.stringify($json.execution?.data?.resultData?.runData ?? {}) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        64
+      ],
+      "id": "e2d07053-f371-4c4c-b4a5-cae35e138c37",
+      "name": "format_error_data"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1j84IM7A0s1qwmv-iV0LIpYHbqbJrmDuFZ-iFGDx2tLI",
+          "mode": "list",
+          "cachedResultName": "AI_System_Observability",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1j84IM7A0s1qwmv-iV0LIpYHbqbJrmDuFZ-iFGDx2tLI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 155003970,
+          "mode": "list",
+          "cachedResultName": "Errors_Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1j84IM7A0s1qwmv-iV0LIpYHbqbJrmDuFZ-iFGDx2tLI/edit#gid=155003970"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $json.timestamp }}",
+            "workflow": "={{ $json.workflow }}",
+            "node": "={{ $json.node }}",
+            "error_message": "={{ $json.error_message }}",
+            "input": "={{ $json.input }}",
+            "stacktrace": "={{ $json.stacktrace }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workflow",
+              "displayName": "workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "node",
+              "displayName": "node",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "stacktrace",
+              "displayName": "stacktrace",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input",
+              "displayName": "input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        336,
+        64
+      ],
+      "id": "0415c2b6-add0-493a-bd37-3c0b886b9b0f",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gV8qjRH3sPollc7A",
+          "name": "Google Sheets account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "format_error_data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "format_error_data": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "e211cb56d79a369aa726df3469ff35f9b65911ba55888505ad42353dd56b422a"
+  }
+}
