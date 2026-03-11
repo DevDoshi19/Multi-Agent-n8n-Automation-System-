@@ -1,0 +1,965 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "mode": "webhook",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        2144,
+        32
+      ],
+      "id": "e61bfc3b-abac-4b95-ba38-3d39983d8cf5",
+      "name": "When chat message received",
+      "webhookId": "d0071b05-f7b6-4fc6-b835-f5e98898624e"
+    },
+    {
+      "parameters": {
+        "content": "STEP 1 — Observability & Failure Logging\n\nBefore security, scaling, or testing — you must know when your system fails.\n\nRule in production systems:\n\nIf you cannot observe it, you cannot operate it.\n\nSo we will build:\n\n1️⃣ Request Logging\n2️⃣ Failure Logging\n3️⃣ Execution Metrics\n\nAll stored in Google Sheets for now (later you can move to Postgres",
+        "height": 304,
+        "width": 560,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        16,
+        928
+      ],
+      "typeVersion": 1,
+      "id": "55378bf6-800c-455a-b220-8bbada08f562",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "text": "={{ $('When chat message received').item.json.chatInput }}",
+        "guardrails": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.guardrails",
+      "typeVersion": 2,
+      "position": [
+        2688,
+        32
+      ],
+      "id": "ab7971cf-065a-4acc-af0c-c0de736c7cdd",
+      "name": "Guardrails1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ \n\"User Question:\\n\" + $json.userQuestion +\n\"\\n\\nSurvey Data Summary:\\n\" +\nJSON.stringify($json, null, 2)\n}}",
+        "options": {
+          "systemMessage": "You are the central orchestration agent.\n\nYour job is to:\n1. Understand the user's query.\n2. Delegate research tasks to the Research Agent.\n3. Send research findings to the Logical Agent for analysis.\n4. Send logical analysis to the Explainer Agent for simplification.\n5. Compile final response.\n\nRules:\n- Do not generate raw research yourself.\n- Always use Research Agent first for factual data.\n- Always use Logical Agent before giving conclusions.\n- Always use Explainer Agent before presenting final answer to user.\n- Maintain structured workflow.\n- Ensure responses are coherent and aligned.\n\nYou are responsible for quality control and consistency.\nIf any agent output is weak, refine it before final delivery.\n\n# Rule :\nyou need to use Research Agent tool everytime ..\nand all other tools.",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3728,
+        16
+      ],
+      "id": "bd8d0c25-7366-426d-bec7-7a17909126a0",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "c1-exp/openai/gpt-4.1/v-20250617",
+          "mode": "list",
+          "cachedResultName": "c1-exp/openai/gpt-4.1/v-20250617"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        3360,
+        256
+      ],
+      "id": "755a6854-878d-42ae-85ca-92ebb626541c",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "U6CwKMd9dknq06QL",
+          "name": "thesys-api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 4
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        3552,
+        256
+      ],
+      "id": "3c7283f3-056c-4f40-9dd8-8d65c875d3de",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "toolDescription": "You are a professional research analyst.\nYour only job is to gather relevant, factual, and verifiable information related to the user's query.\n\nTools : \n-you have google sheet for searching.",
+        "text": "={{ $json.user_query }}",
+        "options": {
+          "systemMessage": "You are a research analyst.\n\nYou have access to ONE tool: Get_row_s_in_sheet_in_Google_Sheets.\n\nIMPORTANT TOOL RULES:\n- You MUST NOT invent parameters.\n- You MUST call the tool exactly as defined.\n- Do NOT pass \"Sheet Name\".\n- Do NOT pass \"Range\".\n- Use only the parameters provided in the tool schema.\n- If no parameters are required, call the tool without extra fields.\n\nYour job:\n- Retrieve data from the sheet.\n- Extract relevant rows.\n- Summarize findings in structured bullet format.\n\nReturn only factual findings.\nDo not explain.\nDo not conclude."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        3472,
+        528
+      ],
+      "id": "3bb26712-447a-4631-8bbe-91e5a1ed024d",
+      "name": "Research Agent1"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 2
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        3456,
+        704
+      ],
+      "id": "b5003ee7-cd99-4183-b33b-9e60d922f5f2",
+      "name": "Simple Memory5"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 2
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        4064,
+        720
+      ],
+      "id": "89e7c943-620a-4afa-9d88-8d8ee8e8a1d7",
+      "name": "Simple Memory6"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 2
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        4560,
+        624
+      ],
+      "id": "a1b0db3f-1795-4e05-8e06-c0482bc1e891",
+      "name": "Simple Memory7"
+    },
+    {
+      "parameters": {
+        "toolDescription": "You are an expert educator and communicator.\nYour task is to convert analytical reasoning into clear, easy-to-understand explanation.",
+        "text": "={{ $json.user_query }}",
+        "options": {
+          "systemMessage": "You are an expert educator and communicator.\nYour task is to convert analytical reasoning into clear, easy-to-understand explanation.\n\nRules:\n- Use simple language.\n- Break down complex ideas.\n- Use relatable examples if helpful.\n- Maintain clarity.\n- Avoid excessive length.\n- Keep explanation structured.\n- Make it easy for a beginner to understand.\n\nTone:\nProfessional but friendly.\n\nDo not introduce new facts.\nExplain only what is provided."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        4352,
+        464
+      ],
+      "id": "aaa12432-cf07-42d6-8881-c6c9a0977485",
+      "name": "Explainer agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        4704,
+        -192
+      ],
+      "id": "31e7d323-8481-4361-8529-9baf66467d7e",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "toolDescription": "You are a logical reasoning engine.\nYour task is to analyze the research data provided and apply structured reasoning.\n",
+        "text": "={{ $json.user_query }}",
+        "options": {
+          "systemMessage": "You are a logical reasoning engine.\n\nYour task is to analyze the research data provided and apply structured reasoning.\n\nRules:\n- Think step-by-step.\n- Compare factors objectively.\n- Identify cause-effect relationships.\n- Rank importance where applicable.\n- Highlight trade-offs.\n- Avoid emotional tone.\n- Avoid storytelling.\n- No unnecessary explanation.\n\nOutput format:\n1. Identified factors\n2. Logical comparison\n3. Highest impact factor (clearly justified)\n4. Supporting reasoning\n\nBe analytical, precise, and objective."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        3872,
+        496
+      ],
+      "id": "7463412c-c5e3-4ad4-98dd-d665c5d23f84",
+      "name": "Logical agent1"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        4352,
+        704
+      ],
+      "id": "1eae1d7c-749e-43de-8a80-04dc8fbb3beb",
+      "name": "Groq Chat Model3",
+      "credentials": {
+        "groqApi": {
+          "id": "1VisWjX19l0hF5yT",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3296,
+        704
+      ],
+      "id": "26453aa6-359c-44c7-9ff1-74478a67c8ef",
+      "name": "Groq Chat Model4",
+      "credentials": {
+        "groqApi": {
+          "id": "1VisWjX19l0hF5yT",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "qwen/qwen3-32b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3872,
+        752
+      ],
+      "id": "cac1467c-0594-41e1-a5d6-6f9d6bbffc93",
+      "name": "Groq Chat Model5",
+      "credentials": {
+        "groqApi": {
+          "id": "1VisWjX19l0hF5yT",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Q7bzHI3UPA9j8QPOo7AflZ-eW5GAGfOfTyOV2IdN79k",
+          "mode": "list",
+          "cachedResultName": "Original_data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Q7bzHI3UPA9j8QPOo7AflZ-eW5GAGfOfTyOV2IdN79k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1289858704,
+          "mode": "list",
+          "cachedResultName": "Original_data.csv",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Q7bzHI3UPA9j8QPOo7AflZ-eW5GAGfOfTyOV2IdN79k/edit#gid=1289858704"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        4192,
+        480
+      ],
+      "id": "b2bddeec-0fdb-4571-ab50-2e0e6d092a0c",
+      "name": "Get row(s) in sheet in Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3DB3nlzlb4xG20PU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1j84IM7A0s1qwmv-iV0LIpYHbqbJrmDuFZ-iFGDx2tLI",
+          "mode": "list",
+          "cachedResultName": "AI_System_Observability",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1j84IM7A0s1qwmv-iV0LIpYHbqbJrmDuFZ-iFGDx2tLI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Requests_Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1j84IM7A0s1qwmv-iV0LIpYHbqbJrmDuFZ-iFGDx2tLI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $now }}",
+            "session_id": "={{ $('When chat message received').item.json.sessionId }}",
+            "workflow": "main_agent_workflow",
+            "status": "received",
+            "latency_ms": "0",
+            "user_query": "={{ $json.guardrailsInput }}",
+            "request_id": "={{ $('set start timer').item.json.request_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "request_id",
+              "displayName": "request_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user_query",
+              "displayName": "user_query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workflow",
+              "displayName": "workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "latency_ms",
+              "displayName": "latency_ms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3312,
+        -96
+      ],
+      "id": "6f22efa5-5ec1-4cb6-aaa2-a55a821bd6c4",
+      "name": "log request",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gV8qjRH3sPollc7A",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1j84IM7A0s1qwmv-iV0LIpYHbqbJrmDuFZ-iFGDx2tLI",
+          "mode": "list",
+          "cachedResultName": "AI_System_Observability",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1j84IM7A0s1qwmv-iV0LIpYHbqbJrmDuFZ-iFGDx2tLI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Requests_Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1j84IM7A0s1qwmv-iV0LIpYHbqbJrmDuFZ-iFGDx2tLI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "request_id": "={{ $('log request').item.json.request_id }}",
+            "timestamp": "={{ $('log request').item.json.timestamp }}",
+            "session_id": "={{ $('log request').item.json.session_id }}",
+            "user_query": "={{ $('log request').item.json.user_query }}",
+            "workflow": "={{ $('log request').item.json.workflow }}",
+            "status": "={{ $('log request').item.json.status }}",
+            "latency_ms": "={{ $('calculate_latency').item.json.latency_ms }}"
+          },
+          "matchingColumns": [
+            "request_id"
+          ],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "request_id",
+              "displayName": "request_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user_query",
+              "displayName": "user_query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workflow",
+              "displayName": "workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "latency_ms",
+              "displayName": "latency_ms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4736,
+        80
+      ],
+      "id": "2f3ba796-7ff2-4433-8b1d-4b737ca25c26",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gV8qjRH3sPollc7A",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "15e8e9a2-9485-459e-9f54-dedcf6b738fb",
+              "name": "start_time",
+              "value": "={{ Date.now() }}",
+              "type": "string"
+            },
+            {
+              "id": "40b1d582-2256-4cef-b817-962459ed1465",
+              "name": "request_id",
+              "value": "={{ $now.toMillis() + '_' + $json.sessionId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2400,
+        32
+      ],
+      "id": "d2eb6cab-1832-4f3d-83af-2b41dbe07040",
+      "name": "set start timer"
+    },
+    {
+      "parameters": {
+        "jsCode": "const start = Number($('set start timer').first().json.start_time);\nconst end = Date.now();\nconst latency = end - start;\n\nreturn {\n  json: {\n    latency_ms: latency,\n    timestamp: new Date().toISOString(),\n    session_id: $('When chat message received').first().json.sessionId,\n    request_id: $('set start timer').first().json.request_id\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4112,
+        16
+      ],
+      "id": "46928e40-3fe9-4360-a11b-9155484aef3f",
+      "name": "calculate_latency"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9796f953-38aa-41a6-9962-d8b16d5169ad",
+              "leftValue": "={{ $json.checks.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2976,
+        -144
+      ],
+      "id": "33ef5288-e026-409f-8722-044802a77161",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"message\": \"Your message was blocked by safety filters. Please rephrase and try again.\",\n  \"status\": \"blocked\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3184,
+        64
+      ],
+      "id": "1370817f-0066-4e1c-9f0b-cd41aa6ea32d",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1j84IM7A0s1qwmv-iV0LIpYHbqbJrmDuFZ-iFGDx2tLI",
+          "mode": "list",
+          "cachedResultName": "AI_System_Observability",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1j84IM7A0s1qwmv-iV0LIpYHbqbJrmDuFZ-iFGDx2tLI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 86804744,
+          "mode": "list",
+          "cachedResultName": "Performance_Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1j84IM7A0s1qwmv-iV0LIpYHbqbJrmDuFZ-iFGDx2tLI/edit#gid=86804744"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $json.timestamp }}",
+            "workflow": "main_agent_workflow",
+            "node": "AI Agent1",
+            "execution_time_ms": "={{ $json.latency_ms }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workflow",
+              "displayName": "workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "node",
+              "displayName": "node",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "execution_time_ms",
+              "displayName": "execution_time_ms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4416,
+        0
+      ],
+      "id": "ef9c8d6e-144e-4dfd-a7ae-db0560845075",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gV8qjRH3sPollc7A",
+          "name": "Google Sheets account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "set start timer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardrails1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "calculate_latency",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Agent1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory5": {
+      "ai_memory": [
+        [
+          {
+            "node": "Research Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory6": {
+      "ai_memory": [
+        [
+          {
+            "node": "Logical agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory7": {
+      "ai_memory": [
+        [
+          {
+            "node": "Explainer agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Explainer agent1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook1": {
+      "main": [
+        []
+      ]
+    },
+    "Logical agent1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Explainer agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Logical agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "log request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set start timer": {
+      "main": [
+        [
+          {
+            "node": "Guardrails1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calculate_latency": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "log request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e211cb56d79a369aa726df3469ff35f9b65911ba55888505ad42353dd56b422a"
+  }
+}
